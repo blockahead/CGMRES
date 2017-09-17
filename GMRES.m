@@ -1,22 +1,31 @@
+%% 操作量の変化量の計算（C/GMRES法）
 function du_new = GMRES( x_current, du, u, T, dv, q, r, sf, zeta, a, b, umax, ht, len )
     
-    % GMRESの最大繰り返し回数（離散時間2点境界値問題の要素数と等しい）
-    k = len.u * dv;
+    k = len.u * dv; % GMRESの最大繰り返し回数（離散時間2点境界値問題の要素数と等しい）
 
-    % 前進差分近似
-    dx = Func( x_current, u, a, b );
     
-    Fxt = CalcF( x_current + ( dx * ht ), u, T, dv, q, r, sf, a, b, umax, len );
-    F = CalcF( x_current, u, T, dv, q, r, sf, a, b, umax, len );
-    Right = - zeta * F - ( ( Fxt - F ) / ht );
+    % GMRES法で解くべき問題の設定
     
-    Fuxt = CalcF( x_current + ( dx * ht ), u + ( du * ht ), T, dv, q, r, sf, a, b, umax, len );
-    Left = ( ( Fuxt - Fxt ) / ht );
+    dx = Func( x_current, u, a, b ); % 状態変化量の前進差分近似
     
-    r0 = Right - Left;
+    Fxt = CalcF( x_current + ( dx * ht ), u, T, dv, q, r, sf, a, b, umax, len ); % 函数Fの状態微分
+    
+    F = CalcF( x_current, u, T, dv, q, r, sf, a, b, umax, len ); % 函数F
+    
+    Right = - zeta * F - ( ( Fxt - F ) / ht ); % 既知項を右辺にまとめる
+    
+    Fuxt = CalcF( x_current + ( dx * ht ), u + ( du * ht ), T, dv, q, r, sf, a, b, umax, len ); % 函数Fの入力，状態微分
+    
+    Left = ( ( Fuxt - Fxt ) / ht ); % 未知項を左辺にまとめる
+    
+    
+    % GMRES法での計算
+    
+    r0 = Right - Left; % 初期残差
+    
     du_new = zeros( len.u * dv, 1 );
     
-    v = zeros( len.u * dv, k + 1 );
+    v = zeros( len.u * dv, k + 1 ); 
     v(:,1) = r0 / norm( r0 );
 
     h = zeros( k + 1 );
@@ -46,7 +55,7 @@ function du_new = GMRES( x_current, du, u, T, dv, q, r, sf, zeta, a, b, umax, ht
 
         y(1:cnt) = h(1:(cnt+1),1:cnt) \ ( norm( r0 ) * e(1:(cnt+1)) );
         
-        % 打ち切り
+        % 誤差が小さくなったら打ち切り
         if ( norm( norm( r0 ) * e(1:(cnt+1)) - h(1:(cnt+1),1:cnt) * y(1:cnt) ) < 0.001 )
             du_new = du + v(:,1:(cnt-1)) * y_pre(1:(cnt-1));
             break;

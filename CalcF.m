@@ -1,3 +1,4 @@
+%% C/GMRES‚Å‚Ì”Ÿ”F‚ÌŒvZ
 function F = CalcF( x_current, u, T, dv, q, r, sf, a, b, umax, len )
     x = Forward( x_current, u, T, dv, a, b, len );
     lmd = Backward( x, u, T, dv, q, sf, a, b, len );

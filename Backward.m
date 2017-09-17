@@ -1,3 +1,4 @@
+%% Œ»ÝŽž‚©‚çT•b–¢—ˆ‚Ü‚Å‚Ì”º•Ï”‚Ì—\‘ªiEuler‹ßŽ—j
 function lmd = Backward( x, u, T, dv, q, sf, a, b, len )
     dt = T / dv;
     

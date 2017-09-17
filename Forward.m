@@ -1,3 +1,4 @@
+%% Œ»ÝŽž‚©‚çT•b–¢—ˆ‚Ü‚Å‚Ìó‘Ô‚Ì—\‘ªiEuler‹ßŽ—j
 function x = Forward( x0, u, T, dv, a, b, len )
     dt = T / dv;
     
