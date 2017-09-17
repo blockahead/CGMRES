@@ -1,0 +1,34 @@
+%% この関数が制御器のトップレイヤーとなり，dSamplingPeriod周期で呼ばれる
+function MV = MPC( x_current, u0, T, dv, q, r, sf, zeta, a, b, umax, ht, len, dSamplingPeriod )
+    %#codegen
+    persistent flag; % 初回フラグ
+    persistent du; % 操作量の変化量（前回値）
+    persistent u; % 操作量（前回値）
+    
+    
+    if ( isempty( flag ) )
+        flag = 0;
+    end
+    
+    if ( isempty( du ) )
+        du = zeros( len.u * dv, 1 );
+    end
+    
+    if ( isempty( u ) )
+        u = zeros( len.u * dv, 1 );
+    end
+    
+    % 初回のみ操作量の計算方法が異なる
+    if ( 0 == flag )
+        du = repmat( u0, dv, 1 );
+        u = du;
+        flag = 1;
+    end 
+    
+    MV = u(1:len.u);
+    
+    % du = rand( size( du ) ); % 操作量の変化量の初期値は任意に選べるが，前回値を利用すると収束が速い
+    du = GMRES( x_current, du, u, T, dv, q, r, sf, zeta, a, b, umax, ht, len );
+    u = u + du * dSamplingPeriod;
+
+end
