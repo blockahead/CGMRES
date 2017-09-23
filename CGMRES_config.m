@@ -3,35 +3,39 @@ clear;
 
 
 % システム定義
-a = -1; % システム変数
-b = -1; % システム変数
-
-umax = 1; % 入力上限（下限はゼロに設定している）
-
+sys.a = -1;     % システム変数
+sys.b = -1;     % システム変数
 
 % シミュレーション定義
 tsim = 20; % シミュレーション時間 (s)
 
 
 % C/GMRESのコントローラ定義
-dSamplingPeriod = 0.001;	% MATLAB Functionのサンプリング周期 (s)
-ht = 0.001;                 % 前進差分近似の時間幅 (s)
-zeta = 1000.0;              % 操作量の安定化ゲイン (-)
-tf = 1.0;                   % 予測時間の最終値 (s)
-alpha = 0.5;                % 予測時間の上昇速度ゲイン (-)
-dv = 5;                     % 予測時間の分割数 (-) （評価函数によって評価するポイントの数）
+dSamplingPeriod = 0.001;                % MATLAB Functionのサンプリング周期 (s)
+cgmres.ht = 0.001;                      % 前進差分近似の時間幅 (s)
+cgmres.zeta = 1000.0;                   % 操作量の安定化ゲイン (-)
+cgmres.tf = 1.0;                        % 予測時間の最終値 (s)
+cgmres.alpha = 0.5;                     % 予測時間の上昇速度ゲイン (-)
+cgmres.dv = 5;                          % 予測時間の分割数 (-) （評価函数によって評価するポイントの数）
 
-x0 = [2;0];                 % コントローラに与える初期状態
-u0 = [0.01;0.9;0.03];       % コントローラに与える初期操作量
+cgmres.x0 = [2;0];                      % コントローラに与える初期状態
+cgmres.u0 = [0.01;0.9;0.03];            % コントローラに与える初期操作量
 
-len.x = length( x0 );       % 状態の数
-len.u = length( u0 );       % 操作量の数
-len.lmd = len.x;            % 随伴変数の数
+cgmres.len_x = length( cgmres.x0 );     % 状態の数
+cgmres.len_u = length( cgmres.u0 );     % 操作量の数
+cgmres.len_lmd = cgmres.len_x;          % 随伴変数の数
 
-q = [ 1;10 ];               % 状態に対する重み
-r = [ 1;0.01 ];             % 操作量に対する重み
-sf = [ 1;10 ];              % 予測時間の最終状態に対する重み
+cgmres.q = [ 1;10 ];                    % 状態に対する重み
+cgmres.r = [ 1;0.01 ];                  % 操作量に対する重み
+cgmres.sf = [ 1;10 ];                   % 予測時間の最終状態に対する重み
 
+cgmres.umax = 1;                        % 入力上限（下限はゼロに設定している）
+
+% C/GMRESのコントローラ用計算
+buff = c2d( ss( tf( [ cgmres.tf ], [ (1/cgmres.alpha), 1 ] ) ), dSamplingPeriod );
+cgmres.T_outGain = buff.a;               % 予測時間差分方程式
+cgmres.T_inGain = buff.b;              % 予測時間差分方程式
+clearvars buff;
 
 % シミュレーションの実行と時間計測
 tic;

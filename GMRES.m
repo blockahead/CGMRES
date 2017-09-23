@@ -1,46 +1,46 @@
 %% 操作量の変化量の計算（C/GMRES法）
-function du_new = GMRES( x_current, du, u, T, dv, q, r, sf, zeta, a, b, umax, ht, len )
+function du_new = GMRES( x_current, du, u, T, sys, cgmres )
     
-    k = len.u * dv; % GMRESの最大繰り返し回数（離散時間2点境界値問題の要素数と等しい）
+    k = cgmres.len_u * cgmres.dv; % GMRESの最大繰り返し回数（離散時間2点境界値問題の要素数と等しい）
 
     
     % GMRES法で解くべき問題の設定
     
-    dx = Func( x_current, u, a, b ); % 状態変化量の前進差分近似
+    dx = Func( x_current, u, sys ); % 状態変化量の前進差分近似
     
-    Fxt = CalcF( x_current + ( dx * ht ), u, T, dv, q, r, sf, a, b, umax, len ); % 函数Fの状態微分
+    Fxt = CalcF( x_current + ( dx * cgmres.ht ), u, T, sys, cgmres ); % 函数Fの状態微分
     
-    F = CalcF( x_current, u, T, dv, q, r, sf, a, b, umax, len ); % 函数F
+    F = CalcF( x_current, u, T, sys, cgmres ); % 函数F
     
-    Right = - zeta * F - ( ( Fxt - F ) / ht ); % 既知項を右辺にまとめる
+    Right = - cgmres.zeta * F - ( ( Fxt - F ) / cgmres.ht ); % 既知項を右辺にまとめる
     
-    Fuxt = CalcF( x_current + ( dx * ht ), u + ( du * ht ), T, dv, q, r, sf, a, b, umax, len ); % 函数Fの入力，状態微分
+    Fuxt = CalcF( x_current + ( dx * cgmres.ht ), u + ( du * cgmres.ht ), T, sys, cgmres ); % 函数Fの入力，状態微分
     
-    Left = ( ( Fuxt - Fxt ) / ht ); % 未知項を左辺にまとめる
+    Left = ( ( Fuxt - Fxt ) / cgmres.ht ); % 未知項を左辺にまとめる
     
     
     % GMRES法での計算
     
     r0 = Right - Left; % 初期残差
     
-    du_new = zeros( len.u * dv, 1 );
+    du_new = zeros( cgmres.len_u * cgmres.dv, 1 );
     
-    v = zeros( len.u * dv, k + 1 ); 
+    v = zeros( cgmres.len_u * cgmres.dv, k + 1 ); 
     v(:,1) = r0 / norm( r0 );
 
     h = zeros( k + 1 );
 
-    y = zeros( len.u * dv, 1 );
-    y_pre = zeros( len.u * dv, 1 );
+    y = zeros( cgmres.len_u * cgmres.dv, 1 );
+    y_pre = zeros( cgmres.len_u * cgmres.dv, 1 );
     
     e = zeros( k + 1, 1 );
     e(1) = 1;
     
     for cnt = 1:k
-        Fuxt = CalcF( x_current + ( dx * ht ), u + ( v(:,cnt) * ht ), T, dv, q, r, sf, a, b, umax, len );
-        Av = ( ( Fuxt - Fxt ) / ht );
+        Fuxt = CalcF( x_current + ( dx * cgmres.ht ), u + ( v(:,cnt) * cgmres.ht ), T, sys, cgmres );
+        Av = ( ( Fuxt - Fxt ) / cgmres.ht );
 
-        Sum = zeros( len.u * dv, 1 );
+        Sum = zeros( cgmres.len_u * cgmres.dv, 1 );
     
         for cnt2 = 1:cnt
             h(cnt2,cnt) = Av' * ( v(:,cnt2) );

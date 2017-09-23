@@ -1,34 +1,52 @@
-%% この関数が制御器のトップレイヤーとなり，dSamplingPeriod周期で呼ばれる
-function MV = MPC( x_current, u0, T, dv, q, r, sf, zeta, a, b, umax, ht, len, dSamplingPeriod )
+function MV = MPC( x_current, sys, cgmres, dSamplingPeriod )
     %#codegen
     persistent flag; % 初回フラグ
     persistent du; % 操作量の変化量（前回値）
     persistent u; % 操作量（前回値）
-    
+    persistent T; % 予測区間
     
     if ( isempty( flag ) )
         flag = 0;
     end
     
     if ( isempty( du ) )
-        du = zeros( len.u * dv, 1 );
+        du = zeros( cgmres.len_u * cgmres.dv, 1 );
     end
     
     if ( isempty( u ) )
-        u = zeros( len.u * dv, 1 );
+        u = zeros( cgmres.len_u * cgmres.dv, 1 );
+    end
+    
+    if ( isempty( T ) )
+        T = 0;
     end
     
     % 初回のみ操作量の計算方法が異なる
     if ( 0 == flag )
-        du = repmat( u0, dv, 1 );
+        du = repmat( cgmres.u0, cgmres.dv, 1 );
         u = du;
         flag = 1;
     end 
     
-    MV = u(1:len.u);
+    MV = u(1:cgmres.len_u);
     
     % du = rand( size( du ) ); % 操作量の変化量の初期値は任意に選べるが，前回値を利用すると収束が速い
-    du = GMRES( x_current, du, u, T, dv, q, r, sf, zeta, a, b, umax, ht, len );
+    du = GMRES( x_current, du, u, T, sys, cgmres );
     u = u + du * dSamplingPeriod;
 
+    T = cgmres.T_outGain * T + cgmres.T_inGain;
+
 end
+
+
+
+
+
+
+
+
+
+
+
+
+

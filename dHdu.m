@@ -7,10 +7,10 @@
 % a        : a              （システム係数）
 % b        : b              （システム係数）
 
-function Hu = dHdu( x, u, lmd, r, umax, a, b )
+function Hu = dHdu( x, u, lmd, sys, cgmres )
     Hu = [ ...
-        r(1) * u(1) + b * lmd(2) * x(2) + u(3) * ( 2 * u(1) - umax );
-        2 * u(2) * u(3) - r(2);
-        ( u(1) - ( umax / 2 ) )^2 + u(2)^2 - ( umax / 2 )^2;
+        cgmres.r(1) * u(1) + sys.b * lmd(2) * x(2) + u(3) * ( 2 * u(1) - cgmres.umax );
+        2 * u(2) * u(3) - cgmres.r(2);
+        ( u(1) - ( cgmres.umax / 2 ) )^2 + u(2)^2 - ( cgmres.umax / 2 )^2;
         ];
 end
