@@ -7,6 +7,6 @@ function lmd = Backward( x, u, T, sys, cgmres )
     
     for cnt = cgmres.dv-1:-1:1
         lmd((1:cgmres.len_lmd)+cgmres.len_lmd*(cnt-1)) = lmd((1:cgmres.len_lmd)+cgmres.len_lmd*(cnt)) ...
-                                                            + dHdx( x((1:cgmres.len_x)+cgmres.len_x*(cnt)), lmd((1:cgmres.len_lmd)+cgmres.len_lmd*(cnt)), sys, cgmres ) * dt;
+                                                            + dHdx( x((1:cgmres.len_x)+cgmres.len_x*(cnt)), lmd((1:cgmres.len_lmd)+cgmres.len_lmd*(cnt)), u, sys, cgmres ) * dt;
     end
 end
