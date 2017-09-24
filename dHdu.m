@@ -2,10 +2,10 @@
 % x        : [ x;dx ]       （位置，速度）
 % u        : [ u;v;mu ]     （操作量，ダミー操作量，ラグランジュ乗数）
 % lmd      : [ lmd1;lmd2 ]  （随伴変数1，随伴変数2）
-% r        : [ r1;r2 ]      （操作量の重み，ダミー操作量の重み）
-% umax     : umax           （操作量の最大値）
-% a        : a              （システム係数）
-% b        : b              （システム係数）
+% sys      : a              （システム係数）
+% sys      : b              （システム係数）
+% cgmres   : [ r1;r2 ]      （操作量の重み，ダミー操作量の重み）
+% cgmres   : umax           （操作量の最大値）
 
 function Hu = dHdu( x, u, lmd, sys, cgmres )
     Hu = [ ...
