@@ -2,15 +2,15 @@ close all;
 clear;
 
 
-% ƒVƒXƒeƒ€’è‹`
+%% ƒVƒXƒeƒ€’è‹`
 sys.a = -1;     % ƒVƒXƒeƒ€•Ï”
 sys.b = -1;     % ƒVƒXƒeƒ€•Ï”
 
-% ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“’è‹`
+%% ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“’è‹`
 tsim = 20; % ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“ŠÔ (s)
 
 
-% C/GMRES‚ÌƒRƒ“ƒgƒ[ƒ‰’è‹`
+%% C/GMRES‚ÌƒRƒ“ƒgƒ[ƒ‰’è‹`
 dSamplingPeriod = 0.001;                % MATLAB Function‚ÌƒTƒ“ƒvƒŠƒ“ƒOüŠú (s)
 cgmres.ht = 0.001;                      % ‘Oi·•ª‹ß—‚ÌŠÔ• (s)
 cgmres.zeta = 1000.0;                   % ‘€ì—Ê‚ÌˆÀ’è‰»ƒQƒCƒ“ (-)
@@ -21,9 +21,7 @@ cgmres.dv = 5;                          % —\‘ªŠÔ‚Ì•ªŠ„” (-) i•]‰¿”Ÿ”‚É‚æ‚Á‚
 cgmres.x0 = [2;0];                      % ƒRƒ“ƒgƒ[ƒ‰‚É—^‚¦‚é‰Šúó‘Ô
 cgmres.u0 = [0.01;0.9;0.03];            % ƒRƒ“ƒgƒ[ƒ‰‚É—^‚¦‚é‰Šú‘€ì—Ê
 
-cgmres.len_x = length( cgmres.x0 );     % ó‘Ô‚Ì”
-cgmres.len_u = length( cgmres.u0 );     % ‘€ì—Ê‚Ì”
-cgmres.len_lmd = cgmres.len_x;          % ”º•Ï”‚Ì”
+
 
 cgmres.q = [ 1;10 ];                    % ó‘Ô‚É‘Î‚·‚éd‚İ
 cgmres.r = [ 1;0.01 ];                  % ‘€ì—Ê‚É‘Î‚·‚éd‚İ
@@ -31,13 +29,26 @@ cgmres.sf = [ 1;10 ];                   % —\‘ªŠÔ‚ÌÅIó‘Ô‚É‘Î‚·‚éd‚İ
 
 cgmres.umax = 1;                        % “ü—ÍãŒÀi‰ºŒÀ‚Íƒ[ƒ‚Éİ’è‚µ‚Ä‚¢‚éj
 
-% C/GMRES‚ÌƒRƒ“ƒgƒ[ƒ‰—pŒvZ
+%% C/GMRES‚ÌƒRƒ“ƒgƒ[ƒ‰—pŒvZ
+% —\‘ªŠÔT‚ÌŒvZ—p’è”
 buff = c2d( ss( tf( [ cgmres.tf ], [ (1/cgmres.alpha), 1 ] ) ), dSamplingPeriod );
-cgmres.T_outGain = buff.a;               % —\‘ªŠÔ·•ª•û’ö®
-cgmres.T_inGain = buff.b;              % —\‘ªŠÔ·•ª•û’ö®
+cgmres.T_outGain = buff.a;              % —\‘ªŠÔ·•ª•û’ö®
+cgmres.T_inGain = buff.b;               % —\‘ªŠÔ·•ª•û’ö®
 clearvars buff;
 
-% ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ÌÀs‚ÆŠÔŒv‘ª
+% ‰Šú“ü—Í’l‚ÌŒvZiNewton–@j
+lmd0 = dPhidx( cgmres.x0, cgmres );
+u0 = [1;2;3;]; % Newton–@‚Ì‰Šú’l
+
+for cnt = 1:20
+    cgmres.u0 = cgmres.u0 - ddHddu( cgmres.x0, cgmres.u0, lmd0, sys, cgmres ) \ dHdu( cgmres.x0, cgmres.u0, lmd0, sys, cgmres );
+end
+
+cgmres.len_x = length( cgmres.x0 );     % ó‘Ô‚Ì”
+cgmres.len_u = length( cgmres.u0 );     % ‘€ì—Ê‚Ì”
+cgmres.len_lmd = cgmres.len_x;          % ”º•Ï”‚Ì”
+
+%% ƒVƒ~ƒ…ƒŒ[ƒVƒ‡ƒ“‚ÌÀs‚ÆŠÔŒv‘ª
 tic;
 sim( 'CGMRES' );
 toc
